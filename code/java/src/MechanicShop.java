@@ -23,6 +23,7 @@ import java.io.BufferedReader;
 import java.io.InputStreamReader;
 import java.util.List;
 import java.util.ArrayList;
+// import 
 
 /**
  * This class defines a simple embedded SQL utility class that is designed to
@@ -242,7 +243,7 @@ public class MechanicShop{
 			
 			boolean keepon = true;
 			while(keepon){
-				System.out.println("MAIN MENU");
+				System.out.println("\nMAIN MENU");
 				System.out.println("---------");
 				System.out.println("1. AddCustomer");
 				System.out.println("2. AddMechanic");
@@ -303,9 +304,59 @@ public class MechanicShop{
 		}while (true);
 		return input;
 	}//end readChoice
+
+	public static int readChoice(int maxVal) {
+		int input;
+		// returns only if a correct value is given.
+		do {
+			
+			try { // read the integer, parse it and break.
+				input = Integer.parseInt(in.readLine());
+				if(input > maxVal || input < 1)
+					throw new Exception();
+				break;
+			}catch (Exception e) {
+				System.out.println("Your input is invalid!");
+				System.out.print("Please choose a number between 1 and "+ maxVal +": ");
+				continue;
+			}//end try
+		}while (true);
+		System.out.println();
+		return input;
+	}
+
+	/**
+	 * Used to read user input for (y/n) questions
+	 * 
+	 * @return - "y" or "n" (as strings not char)
+	 */
+	public static String readBinaryChoice() {
+		String input;
+		do {
+			try { 
+				input = in.readLine();
+				input = input.toLowerCase();
+				if( !(input.equals("y") || input.equals("n")) ) {
+					throw new Exception();
+				}
+				else {
+					break;
+				}
+			}catch (Exception e) {
+				System.out.print("Please enter 'y' or 'n': ");
+				continue;
+			}
+		}while(true);
+		return input;
+	}
 	
 	public static void AddCustomer(MechanicShop esql){//1
 		
+	}
+
+	public static String AddCustomer_ReturnID(MechanicShop esql){//1
+		String cid = "";
+		return cid;
 	}
 	
 	public static void AddMechanic(MechanicShop esql){//2
@@ -318,19 +369,19 @@ public class MechanicShop{
 		*/
 		try {
 			String query = "";
-			System.out.println("----Add Mechanic----");
+			System.out.println("\n----Add Mechanic----");
 			
-			System.out.print("\nEnter mechanic id:");
+			System.out.print("\nEnter mechanic id: ");
 			String m_ID = in.readLine();
 			//FIXME: check valid input (even input lengths for each field)
-			System.out.print("\nEnter first name:");
+			System.out.print("\nEnter first name: ");
 			String m_fname = in.readLine();
-			System.out.print("\nEnter last name:");
+			System.out.print("\nEnter last name: ");
 			String m_lname = in.readLine();
-			System.out.print("\nEnter years of experience:");
+			System.out.print("\nEnter years of experience: ");
 			String m_yearsExp = in.readLine();
 
-			query = "INSERT INTO Mechanic VALUES("+m_ID+","+m_fname+","+m_lname+","+m_yearsExp+");";
+			query = "INSERT INTO Mechanic VALUES ("+m_ID+",'"+m_fname+"','"+m_lname+"',"+m_yearsExp+");";
 
 			System.out.println("Query is:\n"+query);
 			esql.executeUpdate(query);
@@ -341,6 +392,11 @@ public class MechanicShop{
 	
 	public static void AddCar(MechanicShop esql){//3
 		
+	}
+
+	public static String AddCar_ReturnVIN(MechanicShop esql){//3
+		String vin = "";
+		return vin;
 	}
 	
 	public static void InsertServiceRequest(MechanicShop esql){//4
@@ -355,26 +411,114 @@ public class MechanicShop{
 		*/
 		try {
 			String query ="";
-			System.out.println("----Insert Service Request----");
+			String sr_rid, sr_cid, sr_vin, sr_date, sr_odometer, sr_complain;
+			String c_id, c_fname, c_lname, c_phone, c_address;
+			int userChoiceInt = -1;
+			System.out.println("\n----Insert Service Request----");
+			System.out.print("Create service request for an existing customer?\n(y/n): ");
+			String userChoice = readBinaryChoice();
+			switch(userChoice) { // switch statement will get sr_cid, sr_vin
+				case "y":
+					System.out.print("Enter the customer's last name: ");
+					c_lname = in.readLine();
 
-			System.out.print("Enter service request id:");
-			String sr_rid = in.readLine();
-			System.out.print("Enter customer id:");
-			String sr_cid = in.readLine();
-			System.out.print("Enter car vin:");
-			String sr_vin = in.readLine();
-			System.out.print("Enter service request date:");
-			String sr_date = in.readLine();
-			System.out.print("Enter odometer reading:");
-			String sr_odometer = in.readLine();
-			System.out.print("Enter complain (optional):");
-			String sr_complain = in.readLine();
+					query = "select * from customer where customer.lname='"+c_lname+"';";
+					System.out.println(query);
+					List<List<String>> listOfCustomers = esql.executeQueryAndReturnResult(query);
+
+					if(listOfCustomers.size() > 1) { // more than one customer found for this lname
+						System.out.println("(" + listOfCustomers.size() + ") Customers found!:");
+
+						// print list of customers
+						for (int curCustomer = 0; curCustomer < listOfCustomers.size(); ++curCustomer) { // iterate over customers
+							System.out.print(curCustomer+1 + ". ");
+							listOfCustomers.get(curCustomer).set(4, listOfCustomers.get(curCustomer).get(4).trim()); // trim trailing whitespace on address
+							for(int curCol = 0; curCol < listOfCustomers.get(curCustomer).size(); ++curCol) { // iterate over customer columns
+								// listOfCustomers.get(curCustomer).set( curCol, listOfCustomers.get(curCustomer).get(curCol).trim() );
+								System.out.print(listOfCustomers.get(curCustomer).get(curCol) + " ");
+							}
+							System.out.println();
+						}
+
+						//prompt user to select from list of customers
+						System.out.print("\nSelect customer (1-" + listOfCustomers.size() + "): ");
+						userChoiceInt = readChoice(listOfCustomers.size());
+
+						// get car for this customer's SR; need to query DB for car
+						sr_cid = listOfCustomers.get(userChoiceInt-1).get(0); // get customer id
+
+					}
+					else { // 1 or no customers with lname found
+						// if one customer, confirm customer choice and add SR
+						if(listOfCustomers.size() == 1) {
+							listOfCustomers.get(0).set(4, listOfCustomers.get(0).get(4).trim()); // trim trailing whitespace on address
+							for (int colIter = 0; colIter < listOfCustomers.get(0).size(); ++colIter) {
+								System.out.print(listOfCustomers.get(0).get(colIter) + " ");
+							}
+							System.out.println();
+							System.out.print("\nInitiate request for this customer?\n(y/n): ");
+							userChoice = readBinaryChoice();
+							if(userChoice.equals("y")) { 
+								System.out.print("Adding request for this customer");
+								sr_cid = listOfCustomers.get(0).get(0);
+								// break;
+							}
+							else {
+								InsertServiceRequest(esql);
+								return;
+							}
+						}
+						else {
+							System.out.println("Customer does not exist!");
+							InsertServiceRequest(esql);
+							return;
+						}
+					}
+
+					// use sr_cid to select a car for the service request
+					query = "SELECT Owns.car_vin FROM Owns WHERE Owns.customer_id="+sr_cid+";";
+					List<List<String>> carsOwned = esql.executeQueryAndReturnResult(query);
+
+					// if customer owns many cars, prompt user to select which car
+					if(carsOwned.size() > 1) {
+						System.out.println("("+carsOwned.size() + ") cars owned by this customer");
+
+						// print list of cars owned by this customer
+						for(int curCar = 0; curCar < carsOwned.size(); ++curCar) {
+							System.out.print(curCar+1 + ". ");
+							System.out.print(carsOwned.get(curCar).get(0) + " ");
+							System.out.println();
+						}
+						
+						// prompt user to select from list of cars
+						System.out.print("\nSelect car (1-" + carsOwned.size() + "): ");
+						userChoiceInt = readChoice(carsOwned.size());
+						
+						// get vin for sr_vin from userChoice
+						sr_vin = carsOwned.get(userChoiceInt-1).get(0);
+					}
+					break;
+
+				case "n":
+					// create new customer
+					sr_cid = AddCustomer_ReturnID(esql);
+					sr_vin = AddCar_ReturnVIN(esql);
+					break;
+			}
+			// at this point we have sr_rid, sr_cid, sr_vin
+			// get sr_date, sr_odometer, sr_complain
+			System.out.print("Enter service request date: ");
+			sr_date = in.readLine();
+			System.out.print("Enter odometer reading: ");
+			sr_odometer = in.readLine();
+			System.out.print("Enter complaint (optional): ");
+			sr_complain = in.readLine();
 			
-			query = "INSERT INTO Service_Request VALUES ("+sr_rid+","+sr_cid+","+sr_vin
-			+","+sr_date+","+sr_odometer+","+sr_complain+");";
+			// query = "INSERT INTO Service_Request VALUES ("+sr_rid+","+sr_cid+","+sr_vin
+			// +","+sr_date+","+sr_odometer+","+sr_complain+");";
 			
-			System.out.println("Query is:\n"+query);
-			esql.executeUpdate(query);
+			// System.out.println("Query is:\n"+query);
+			// esql.executeUpdate(query);
 		}catch(Exception e) {
 			System.err.println(e.getMessage());
 		}
