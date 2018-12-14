@@ -357,6 +357,28 @@ public class MechanicShop{
 	}
 	
 	public static void AddCustomer(MechanicShop esql){//1
+
+		try {
+			String query = "";
+			System.out.println("\n----Adding Customer----");
+
+			System.out.println("\nEnter customer id: ");
+			String c_ID = in.readLine();
+			//FIXME: check valid input (even input lengths for each field)
+			System.out.print("\nEnter first name: ");
+			String c_fname = in.readLine();
+			System.out.print("\nEnter last name: ");
+			String c_lname = in.readLine();
+			System.out.print("\nEnter address: ");
+			String c_address = in.readLine();
+			
+			query = "INSERT INTO Customer VALUES ("+c_ID",'"+c_fname"', '"+c_lname"',"+c_address");";
+			System.out.println("Query is:\n"+query);
+			esql.executeUpdate(query);
+
+		}catch(Exception e) {
+			System.err.println(e.getMessage());
+		}
 		
 	}
 
@@ -398,6 +420,28 @@ public class MechanicShop{
 	
 	public static void AddCar(MechanicShop esql){//3
 		
+		try {
+
+			String query = "";
+			System.out.println("\n----Add Car----");
+			System.out.print("\nEnter VIN: ");
+			String vin = in.readLine();
+			System.out.print("\nEnter make: ");
+			String make = in.readLine();
+			System.out.print("\nEnter model: ");
+			String model = in.readLine();
+			System.out.print("\nEnter year: ");
+			Sting year = in.readLine();
+
+			query = "INSERT INTO Car VALUES ("+vin+", '"+make+"', '"+model+"', "+year+");";
+
+		}
+
+		catch(Exception e) {
+			System.err.println(e.getMessage());
+		}
+
+
 	}
 
 	public static String AddCar_ReturnVIN(MechanicShop esql){//3
@@ -535,7 +579,130 @@ public class MechanicShop{
 	}
 	
 	public static void CloseServiceRequest(MechanicShop esql) throws Exception{//5
+
+		try {
+
+			String query = "";
+			String wid = "";
+			String rid = "";
+			String mid = "";
+			String date = "";
+			String comment = "";
+			String bill = "";
+
+			int userChoiceInt = -1;
+
+			//we do not delete service requests to maintain a history of when the request was intially opened
+
+			System.out.println("\n----Close Service Request----");
+
+			do {
+
+				System.out.print("Enter valid EID to close a service request: ");
+				wid = in.readLine();
+				if (isInt(wid) == false) {
+					System.out.println("Invalid characters: ");
+					break;
+				}
+
+				query = "SELECT id FROM Mechanic WHERE Mechanic.id = '"+wid+"';";
+				System.out.println(query);
+				List<List<String>> listofMechanics = esql.executeQueryAndReturnResult(query);
+
+				if (listofMechanics.isEmpty()) {
+					System.out.println("No matching EID found: ");
+					break;
+				}
+
+				//else valid wid
+				else {
+
+					do {
+
+						System.out.println("Enter valid Service Request Number: ");
+						rid = in.readLine();
+
+						if (isInt(rid) == false) {
+							System.out.println("Please use valid characters: ");
+							break;
+						}
+
+						query = "SELECT rid FROM Service_Request WHERE Service_Request.rid = '"+rid+"';";
+						System.out.println(query);
+						List<List<String>> listofRIDS = esql.executeQueryAndReturnResult(query);
+
+						if (listofRIDS.isEmpty()) {
+							System.out.println("NO Matching RID found: ");
+							break;
+						}
+
+						//else valid rid
+						else {
+							
+							do {
+
+								System.out.println("Enter Closing Date: ");
+								date = in.readLine();
+
+								if (isInt(date) == false || (date.length() != 8) {
+									System.out.println("Invalid date: ")
+									break;
+								}
+
+								else {
+
+									do {
+
+										System.out.print("Enter final bill: ");
+										bill = in.readLine();
+
+										if (isInt(bill) == false || bill < 0) {
+											System.out.println("Invalid bill: ");
+										}
+
+										else {
+											System.out.print("Enter final comments: ");
+											comment = in.readLine();
+											query = "INSERT INTO Service_Request VALUES ("+rid+", '"+rid+"', '"+wid+"', '"+date+"', '"+comment+"', "+bill+" );";
+											esql.executeQuery(query);
+											return;
+										}
+
+									} while(true);
+
+								}
+								
+
+							} while (true);
+
+						}
+
+
+					} while (true);
+
+				}
+
+			} while (true);
+
+
+		} catch Exception();
+
 		
+	}
+
+	public static boolean isInt(String userString) {
+		try { 
+
+			Integer.parseInt(s); 
+
+		} 
+		catch(NumberFormatException e) { 
+			return false; 
+		} 
+		catch(NullPointerException e) {
+			return false;
+		}
+		return true;
 	}
 	
 	public static void ListCustomersWithBillLessThan100(MechanicShop esql){//6
