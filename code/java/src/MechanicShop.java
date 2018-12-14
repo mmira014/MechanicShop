@@ -187,6 +187,7 @@ public class MechanicShop{
 	 * @param cid_sequence
 	 * @param mid_sequence
 	 * @param Ownsid_sequence 
+	 * @param wid_sequence
 	 * @return current value of a sequence
 	 * @throws java.sql.SQLException when failed to execute the query
 	 */
@@ -207,7 +208,7 @@ public class MechanicShop{
 	 * @param OwnsSize number of Owns ids
 	 * @throws SQLException
 	 */
-	public void initiateSequence(int ridSize, int cidSize, int midSize, int OwnsSize) throws SQLException {
+	public void initiateSequence(int ridSize, int cidSize, int midSize, int OwnsSize, int widSize) throws SQLException {
 		//initiate sequence for sr_rid
 
 		Statement stmtTemp = this._connection.createStatement();
@@ -215,19 +216,22 @@ public class MechanicShop{
 		String dropIfExist = "DROP SEQUENCE IF EXISTS rid_sequence;"
 		+" DROP SEQUENCE IF EXISTS cid_sequence;"
 		+" DROP SEQUENCE IF EXISTS mid_sequence;"
-		+" DROP SEQUENCE IF EXISTS Ownsid_sequence;";
+		+" DROP SEQUENCE IF EXISTS Ownsid_sequence;"
+		+" DROP SEQUENCE IF EXISTS wid_sequence";
 		stmtTemp.execute(dropIfExist);
 		
 		String initSeq = "CREATE SEQUENCE rid_sequence START WITH "+ridSize+";"
 		+" CREATE SEQUENCE cid_sequence START WITH "+cidSize+";"
 		+" CREATE SEQUENCE mid_sequence START WITH "+midSize+";"
-		+" CREATE SEQUENCE Ownsid_sequence START WITH "+OwnsSize+";";
+		+" CREATE SEQUENCE Ownsid_sequence START WITH "+OwnsSize+";"
+		+" CREATE SEQUENCE wid_sequence START WITH "+widSize;
 		stmtTemp.execute(initSeq);
 
 		String nextVal = "SELECT nextval('rid_sequence');"
 		+" SELECT nextval('cid_sequence');"
 		+" SELECT nextval('mid_sequence');"
-		+" SELECT nextval('Ownsid_sequence');";
+		+" SELECT nextval('Ownsid_sequence');"
+		+" SELECT nextval('wid_sequence')";
 		stmtTemp.execute(nextVal);
 	}
 
@@ -281,9 +285,10 @@ public class MechanicShop{
 			int cidSize = Integer.parseInt(esql.executeQueryAndReturnResult("Select count(id) from Customer;").get(0).get(0));
 			int midSize = Integer.parseInt(esql.executeQueryAndReturnResult("Select count(id) from Mechanic;").get(0).get(0));
 			int ownsSize = Integer.parseInt(esql.executeQueryAndReturnResult("Select count(ownership_id) from Owns;").get(0).get(0));
+			int widSize = Integer.parseInt(esql.executeQueryAndReturnResult("Select count(wid) from Closed_Request;").get(0).get(0));
 
-			System.out.println("Sizes (rid, cid, mid, owns) are : ("+ridSize+","+cidSize+","+midSize+","+ownsSize+")");
-			esql.initiateSequence(ridSize, cidSize, midSize, ownsSize); // initiate sequence for ids
+			System.out.println("Sizes (rid, cid, mid, owns) are : ("+ridSize+","+cidSize+","+midSize+","+ownsSize+","+widSize+")");
+			esql.initiateSequence(ridSize, cidSize, midSize, ownsSize, widSize); // initiate sequence for ids
 
 			boolean keepon = true;
 			while(keepon){
@@ -786,7 +791,7 @@ public class MechanicShop{
 		try {
 
 			String query = "";
-			String wid = "";
+			int wid;
 			String rid = "";
 			String mid = "";
 			String date = "";
@@ -801,11 +806,11 @@ public class MechanicShop{
 			do {
 
 				System.out.print("Enter valid EID to close a service request: ");
-				wid = in.readLine();
-				if (isInt(wid) == false) {
-					System.out.println("Invalid characters!");
-					continue;
-				}
+				wid = readUserInteger();
+				// if (isInt(wid) == false) {
+				// 	System.out.println("Invalid characters!");
+				// 	continue;
+				// }
 
 				query = "SELECT id FROM Mechanic WHERE Mechanic.id = '"+wid+"';";
 				System.out.println(query);
@@ -839,32 +844,20 @@ public class MechanicShop{
 						break; // break if input for rid correct
 					} while (true);
 
-<<<<<<< HEAD
-						//else valid rid
-							
-							do {
-
-								System.out.println("Enter Closing Date: ");
-								date = in.readLine().trim();
-
-								if (((validDate(date) == false)))  {
-									System.out.println("Please enter valid chars: ");
-									continue;
-								}
-								
-								break;
-=======
 					// get closing date
 					do {
 
 						System.out.println("Enter Closing Date: ");
 						date = in.readLine();
->>>>>>> f3625943da86a5a4dd8cc407a1fda8e20a2e9758
-
-						if (isInt(date) == false || (Integer.parseInt(date) < 0) || (date.length() != 8))  {
-							System.out.println("Please enter valid date. Dates must be in format!"); //FIXME: date format
+						if(! validDate(date))
+						{
+							System.err.println("invalid");
 							continue;
 						}
+						// if (isInt(date) == false || (Integer.parseInt(date) < 0) || (date.length() != 8))  {
+						// 	System.out.println("Please enter valid date. Dates must be in format!"); //FIXME: date format
+						// 	continue;
+						// }
 						
 						break;
 
@@ -872,31 +865,21 @@ public class MechanicShop{
 
 					//valid rid
 					do {
-
+						wid = esql.getCurrSeqVal("wid_sequence");
 						System.out.print("Enter final bill: ");
 						bill = in.readLine();
-
-<<<<<<< HEAD
-								System.out.print("Enter final comments: ");
-								comment = in.readLine();
-				
-
-
-								query = "INSERT INTO Closed_Request VALUES (40001, '"+rid+"', 1, '"+date+"', '"+comment+"', "+bill+" );";
-								System.out.println(query);
-								esql.executeUpdate(query);
-								return;
-=======
 						if (isInt(bill) == false || Integer.parseInt(bill) < 0) {
 							System.out.println("Invalid bill!");
 							continue;
 						}
->>>>>>> f3625943da86a5a4dd8cc407a1fda8e20a2e9758
-
 						System.out.print("Enter final comments: ");
 						comment = in.readLine();
-						query = "INSERT INTO Service_Request VALUES ("+rid+", '"+rid+"', '"+wid+"', '"+date+"', '"+comment+"', "+bill+" );";
-						esql.executeQuery(query);
+		
+
+
+						query = "INSERT INTO Closed_Request VALUES ("+wid+", '"+rid+"', 1, '"+date+"', '"+comment+"', "+bill+" );";
+						System.out.println(query);
+						esql.executeUpdate(query);
 						return;
 					} while(true);	
 				}
@@ -904,14 +887,11 @@ public class MechanicShop{
 		} catch (Exception e) {
 			System.out.print(e.getMessage());
 		}
-<<<<<<< HEAD
 
 		
 	}
 
 	public static boolean validDate(String s) {
-
-		System.out.print("A");
 
 		for (int i = 0; i < s.length(); ++i) {
 		
@@ -928,8 +908,6 @@ public class MechanicShop{
 			}
 		}
 
-		System.out.print("B");
-
 		int count = 0;
 		boolean found = false;
 		int index1 = 0;
@@ -940,8 +918,6 @@ public class MechanicShop{
 			return false;
 		}
 
-		System.out.print("C");
-		
 
 		//verify only 2 '/'
 		for (int j = 0; j < s.length(); ++j) {
@@ -967,20 +943,10 @@ public class MechanicShop{
 
 		}
 
-		System.out.print("D");
-
-
-		System.out.print("E");
-
-
 		//partition each section of the date by the / character
 		String s1, s2, s3 = "";
 
-		System.out.print("INDEX 1: " + index1);
-		System.out.print("INDEX 2: "+ index2);
-
 		if ((s.substring(0, index1)).length() != 1 && ((s.substring(0, index1)).length() != 2)) {
-			System.out.print("F");
 			return false;
 		}
 
@@ -992,7 +958,6 @@ public class MechanicShop{
 		//fixme finish this
 		if ((s.substring(index1 + 1, index2)).length() != 1 && ((s.substring(index1 + 1, index2)).length() != 2)) {
 			System.out.print(s.substring(index1, index2));
-			System.out.print("G");
 			return false;
 		}
 
@@ -1004,7 +969,6 @@ public class MechanicShop{
 
 		if ((s.substring(index2 + 1, s.length()).length() != 4)) {
 			System.out.print(s.substring(index2 + 1, s.length()));
-			System.out.print("H");
 			return false;
 		}
 
@@ -1015,7 +979,6 @@ public class MechanicShop{
 		if (s1.length() == 1) {
 
 			if ((Integer.parseInt(s1) < 1) || (Integer.parseInt(s1) > 9)) {
-				System.out.print("I");
 				return false;
 			}
 
@@ -1024,7 +987,6 @@ public class MechanicShop{
 		else if (s1.length() == 2) {
 
 			if ((Integer.parseInt(s1) < 10) || (Integer.parseInt(s1) > 32)) {
-				System.out.print("J");
 				return false;
 			}
 
@@ -1033,7 +995,6 @@ public class MechanicShop{
 		if (s2.length() == 1) {
 
 			if ((Integer.parseInt(s2) < 1) || (Integer.parseInt(s2) > 9)) {
-				System.out.print("K");
 				return false;
 			}
 			
@@ -1044,14 +1005,12 @@ public class MechanicShop{
 			if ((x == 1) || (x == 3) || (x == 5) || (x == 7) || (x == 9)) {
 
 				if ((Integer.parseInt(s2) < 1 ) || (Integer.parseInt(s2)) > 31) {
-					System.out.print("L");
 					return false;
 				}
 			}
 
 			else if ((Integer.parseInt(s1)) == 2) {
 				if ((Integer.parseInt(s2) < 1) || (Integer.parseInt(s2) > 29)) {
-					System.out.print("M");
 					return false;
 
 				}
@@ -1059,7 +1018,6 @@ public class MechanicShop{
 
 			else if ((x == 4) || (x == 6) || (x == 9) || (x == 11)) {
 				if ((Integer.parseInt(s2) < 1 ) || (Integer.parseInt(s2)) > 30) {
-					System.out.print("N");
 					return false;
 				}
 			}
@@ -1072,23 +1030,6 @@ public class MechanicShop{
 
 
 
-	}
-
-	public static boolean isInt(String userString) {
-		try { 
-
-			Integer.parseInt(userString); 
-
-		} 
-		catch(NumberFormatException e) { 
-			return false; 
-		} 
-		catch(NullPointerException e) {
-			return false;
-		}
-		return true;
-=======
->>>>>>> f3625943da86a5a4dd8cc407a1fda8e20a2e9758
 	}
 	
 	public static void ListCustomersWithBillLessThan100(MechanicShop esql){//6
