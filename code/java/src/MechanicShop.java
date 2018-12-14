@@ -372,7 +372,7 @@ public class MechanicShop{
 			System.out.print("\nEnter address: ");
 			String c_address = in.readLine();
 			
-			query = "INSERT INTO Customer VALUES ("+c_ID",'"+c_fname"', '"+c_lname"',"+c_address");";
+			query = "INSERT INTO Customer VALUES ("+c_ID+",'"+c_fname+"', '"+c_lname+"',"+c_address+");";
 			System.out.println("Query is:\n"+query);
 			esql.executeUpdate(query);
 
@@ -431,7 +431,7 @@ public class MechanicShop{
 			System.out.print("\nEnter model: ");
 			String model = in.readLine();
 			System.out.print("\nEnter year: ");
-			Sting year = in.readLine();
+			String year = in.readLine();
 
 			query = "INSERT INTO Car VALUES ("+vin+", '"+make+"', '"+model+"', "+year+");";
 
@@ -624,7 +624,7 @@ public class MechanicShop{
 
 						if (isInt(rid) == false) {
 							System.out.println("Please use valid characters: ");
-							break;
+							continue;
 						}
 
 						query = "SELECT rid FROM Service_Request WHERE Service_Request.rid = '"+rid+"';";
@@ -633,59 +633,56 @@ public class MechanicShop{
 
 						if (listofRIDS.isEmpty()) {
 							System.out.println("NO Matching RID found: ");
-							break;
+							continue;
 						}
+						
+						break;
+
+					} while (true);
 
 						//else valid rid
-						else {
 							
 							do {
 
 								System.out.println("Enter Closing Date: ");
 								date = in.readLine();
 
-								if (isInt(date) == false || (date.length() != 8) {
-									System.out.println("Invalid date: ")
-									break;
-								}
-
-								else {
-
-									do {
-
-										System.out.print("Enter final bill: ");
-										bill = in.readLine();
-
-										if (isInt(bill) == false || bill < 0) {
-											System.out.println("Invalid bill: ");
-										}
-
-										else {
-											System.out.print("Enter final comments: ");
-											comment = in.readLine();
-											query = "INSERT INTO Service_Request VALUES ("+rid+", '"+rid+"', '"+wid+"', '"+date+"', '"+comment+"', "+bill+" );";
-											esql.executeQuery(query);
-											return;
-										}
-
-									} while(true);
-
+								if (isInt(date) == false || (Integer.parseInt(date) < 0) || (date.length() != 8))  {
+									System.out.Println("Please enter valid chars: ");
+									continue;
 								}
 								
+								break;
 
 							} while (true);
 
-						}
+							//valid rid
+							do {
 
+								System.out.print("Enter final bill: ");
+								bill = in.readLine();
 
-					} while (true);
+								if (isInt(bill) == false || Integer.parseInt(bill) < 0) {
+									System.out.println("Invalid bill: ");
+									continue;
+								}
 
+								System.out.print("Enter final comments: ");
+								comment = in.readLine();
+								query = "INSERT INTO Service_Request VALUES ("+rid+", '"+rid+"', '"+wid+"', '"+date+"', '"+comment+"', "+bill+" );";
+								esql.executeQuery(query);
+								return;
+
+							} while(true);
+								
 				}
 
 			} while (true);
 
 
-		} catch Exception();
+		} catch (Exception e) {
+			System.out.print(e.getMessage());
+		}
 
 		
 	}
@@ -693,7 +690,7 @@ public class MechanicShop{
 	public static boolean isInt(String userString) {
 		try { 
 
-			Integer.parseInt(s); 
+			Integer.parseInt(userString); 
 
 		} 
 		catch(NumberFormatException e) { 
