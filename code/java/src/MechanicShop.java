@@ -915,27 +915,11 @@ public class MechanicShop{
 						break; // break if input for rid correct
 					} while (true);
 
-<<<<<<< HEAD
-						//else valid rid
-							
-							do {
-
-								System.out.println("Enter Closing Date: ");
-								date = in.readLine().trim();
-
-								if (((validDate(date) == false)))  {
-									System.out.println("Please enter valid chars: ");
-									continue;
-								}
-								
-								break;
-=======
 					// get closing date
 					do {
 
 						System.out.println("Enter Closing Date: ");
 						date = in.readLine();
->>>>>>> f3625943da86a5a4dd8cc407a1fda8e20a2e9758
 
 						if (isInt(date) == false || (Integer.parseInt(date) < 0) || (date.length() != 8))  {
 							System.out.println("Please enter valid date. Dates must be in format!"); //FIXME: date format
@@ -952,22 +936,10 @@ public class MechanicShop{
 						System.out.print("Enter final bill: ");
 						bill = in.readLine();
 
-<<<<<<< HEAD
-								System.out.print("Enter final comments: ");
-								comment = in.readLine();
-				
-
-
-								query = "INSERT INTO Closed_Request VALUES (40001, '"+rid+"', 1, '"+date+"', '"+comment+"', "+bill+" );";
-								System.out.println(query);
-								esql.executeUpdate(query);
-								return;
-=======
 						if (isInt(bill) == false || Integer.parseInt(bill) < 0) {
 							System.out.println("Invalid bill!");
 							continue;
 						}
->>>>>>> f3625943da86a5a4dd8cc407a1fda8e20a2e9758
 
 						System.out.print("Enter final comments: ");
 						comment = in.readLine();
@@ -980,7 +952,6 @@ public class MechanicShop{
 		} catch (Exception e) {
 			System.out.print(e.getMessage());
 		}
-<<<<<<< HEAD
 
 		
 	}
@@ -1148,23 +1119,6 @@ public class MechanicShop{
 
 
 
-	}
-
-	public static boolean isInt(String userString) {
-		try { 
-
-			Integer.parseInt(userString); 
-
-		} 
-		catch(NumberFormatException e) { 
-			return false; 
-		} 
-		catch(NullPointerException e) {
-			return false;
-		}
-		return true;
-=======
->>>>>>> f3625943da86a5a4dd8cc407a1fda8e20a2e9758
 	}
 	
 	public static void ListCustomersWithBillLessThan100(MechanicShop esql){//6
