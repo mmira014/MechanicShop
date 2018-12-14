@@ -915,11 +915,27 @@ public class MechanicShop{
 						break; // break if input for rid correct
 					} while (true);
 
+<<<<<<< HEAD
+						//else valid rid
+							
+							do {
+
+								System.out.println("Enter Closing Date: ");
+								date = in.readLine().trim();
+
+								if (((validDate(date) == false)))  {
+									System.out.println("Please enter valid chars: ");
+									continue;
+								}
+								
+								break;
+=======
 					// get closing date
 					do {
 
 						System.out.println("Enter Closing Date: ");
 						date = in.readLine();
+>>>>>>> f3625943da86a5a4dd8cc407a1fda8e20a2e9758
 
 						if (isInt(date) == false || (Integer.parseInt(date) < 0) || (date.length() != 8))  {
 							System.out.println("Please enter valid date. Dates must be in format!"); //FIXME: date format
@@ -936,10 +952,22 @@ public class MechanicShop{
 						System.out.print("Enter final bill: ");
 						bill = in.readLine();
 
+<<<<<<< HEAD
+								System.out.print("Enter final comments: ");
+								comment = in.readLine();
+				
+
+
+								query = "INSERT INTO Closed_Request VALUES (40001, '"+rid+"', 1, '"+date+"', '"+comment+"', "+bill+" );";
+								System.out.println(query);
+								esql.executeUpdate(query);
+								return;
+=======
 						if (isInt(bill) == false || Integer.parseInt(bill) < 0) {
 							System.out.println("Invalid bill!");
 							continue;
 						}
+>>>>>>> f3625943da86a5a4dd8cc407a1fda8e20a2e9758
 
 						System.out.print("Enter final comments: ");
 						comment = in.readLine();
@@ -952,6 +980,191 @@ public class MechanicShop{
 		} catch (Exception e) {
 			System.out.print(e.getMessage());
 		}
+<<<<<<< HEAD
+
+		
+	}
+
+	public static boolean validDate(String s) {
+
+		System.out.print("A");
+
+		for (int i = 0; i < s.length(); ++i) {
+		
+			if ((s.charAt(i) == '/') || (s.charAt(i) == '0') || (s.charAt(i) == '1') || (s.charAt(i) == '2') || (s.charAt(i) == '3')
+			|| (s.charAt(i) == '4') || (s.charAt(i) == '5') || (s.charAt(i) == '6') ||
+			(s.charAt(i) == '7') || (s.charAt(i) == '8') || (s.charAt(i) == '9')) {
+
+				continue;
+
+			}
+
+			else {
+				return false;
+			}
+		}
+
+		System.out.print("B");
+
+		int count = 0;
+		boolean found = false;
+		int index1 = 0;
+		int index2 = 0;
+
+		//if contains two consecutive /
+		if (s.contains("//")) {
+			return false;
+		}
+
+		System.out.print("C");
+		
+
+		//verify only 2 '/'
+		for (int j = 0; j < s.length(); ++j) {
+
+			if (s.charAt(j)== '/') {
+				++count;
+			}
+
+		}
+
+		if (count != 2) {
+			return false;
+		}
+
+		index1 = s.indexOf('/');
+
+		for (int k = index1 + 1; k < s.length(); ++k) {
+
+			if (s.charAt(k) == '/') {
+				index2 = k;
+				break;
+			}
+
+		}
+
+		System.out.print("D");
+
+
+		System.out.print("E");
+
+
+		//partition each section of the date by the / character
+		String s1, s2, s3 = "";
+
+		System.out.print("INDEX 1: " + index1);
+		System.out.print("INDEX 2: "+ index2);
+
+		if ((s.substring(0, index1)).length() != 1 && ((s.substring(0, index1)).length() != 2)) {
+			System.out.print("F");
+			return false;
+		}
+
+
+		else {
+			s1 = (s.substring(0, index1));
+		}
+
+		//fixme finish this
+		if ((s.substring(index1 + 1, index2)).length() != 1 && ((s.substring(index1 + 1, index2)).length() != 2)) {
+			System.out.print(s.substring(index1, index2));
+			System.out.print("G");
+			return false;
+		}
+
+
+
+		else {
+			s2 = (s.substring(index1, index2));
+		}
+
+		if ((s.substring(index2 + 1, s.length()).length() != 4)) {
+			System.out.print(s.substring(index2 + 1, s.length()));
+			System.out.print("H");
+			return false;
+		}
+
+		else {
+			s3 = (s.substring(index2, s.length() -1));
+		}
+
+		if (s1.length() == 1) {
+
+			if ((Integer.parseInt(s1) < 1) || (Integer.parseInt(s1) > 9)) {
+				System.out.print("I");
+				return false;
+			}
+
+		}
+
+		else if (s1.length() == 2) {
+
+			if ((Integer.parseInt(s1) < 10) || (Integer.parseInt(s1) > 32)) {
+				System.out.print("J");
+				return false;
+			}
+
+		}
+
+		if (s2.length() == 1) {
+
+			if ((Integer.parseInt(s2) < 1) || (Integer.parseInt(s2) > 9)) {
+				System.out.print("K");
+				return false;
+			}
+			
+		}
+
+		else if (s2.length() == 2) {
+			int x = Integer.parseInt(s1);
+			if ((x == 1) || (x == 3) || (x == 5) || (x == 7) || (x == 9)) {
+
+				if ((Integer.parseInt(s2) < 1 ) || (Integer.parseInt(s2)) > 31) {
+					System.out.print("L");
+					return false;
+				}
+			}
+
+			else if ((Integer.parseInt(s1)) == 2) {
+				if ((Integer.parseInt(s2) < 1) || (Integer.parseInt(s2) > 29)) {
+					System.out.print("M");
+					return false;
+
+				}
+			}
+
+			else if ((x == 4) || (x == 6) || (x == 9) || (x == 11)) {
+				if ((Integer.parseInt(s2) < 1 ) || (Integer.parseInt(s2)) > 30) {
+					System.out.print("N");
+					return false;
+				}
+			}
+			
+		}
+
+		
+
+	return true;
+
+
+
+	}
+
+	public static boolean isInt(String userString) {
+		try { 
+
+			Integer.parseInt(userString); 
+
+		} 
+		catch(NumberFormatException e) { 
+			return false; 
+		} 
+		catch(NullPointerException e) {
+			return false;
+		}
+		return true;
+=======
+>>>>>>> f3625943da86a5a4dd8cc407a1fda8e20a2e9758
 	}
 	
 	public static void ListCustomersWithBillLessThan100(MechanicShop esql){//6
