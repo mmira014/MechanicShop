@@ -22,6 +22,8 @@ import java.io.FileReader;
 import java.io.BufferedReader;
 import java.io.InputStreamReader;
 import java.util.List;
+
+
 import java.util.ArrayList;
 // import 
 
@@ -241,6 +243,10 @@ public class MechanicShop{
 			
 			esql = new MechanicShop (dbname, dbport, user, "");
 			
+			//initiate sequence for sr_rid
+			// String initSeq = "CREATE SEQUENCE rid_sequence START WITH 1";
+			// esql.executeUpdate(initSeq);
+
 			boolean keepon = true;
 			while(keepon){
 				System.out.println("\nMAIN MENU");
@@ -417,93 +423,94 @@ public class MechanicShop{
 			System.out.println("\n----Insert Service Request----");
 			System.out.print("Create service request for an existing customer?\n(y/n): ");
 			String userChoice = readBinaryChoice();
-			switch(userChoice) { // switch statement will get sr_cid, sr_vin
-				case "y":
-					System.out.print("Enter the customer's last name: ");
-					c_lname = in.readLine();
+			if(userChoice.equals("y")) { // user will create service request for existing customer
+				System.out.print("Enter the customer's last name: ");
+				c_lname = in.readLine();
 
-					query = "select * from customer where customer.lname='"+c_lname+"';";
-					System.out.println(query);
-					List<List<String>> listOfCustomers = esql.executeQueryAndReturnResult(query);
+				query = "select * from customer where customer.lname='"+c_lname+"';";
+				System.out.println(query);
 
-					if(listOfCustomers.size() > 1) { // more than one customer found for this lname
-						System.out.println("(" + listOfCustomers.size() + ") Customers found!:");
+				// search database for customer(s) and save result
+				List<List<String>> listOfCustomers = esql.executeQueryAndReturnResult(query);
 
-						// print list of customers
-						for (int curCustomer = 0; curCustomer < listOfCustomers.size(); ++curCustomer) { // iterate over customers
-							System.out.print(curCustomer+1 + ". ");
-							listOfCustomers.get(curCustomer).set(4, listOfCustomers.get(curCustomer).get(4).trim()); // trim trailing whitespace on address
-							for(int curCol = 0; curCol < listOfCustomers.get(curCustomer).size(); ++curCol) { // iterate over customer columns
-								// listOfCustomers.get(curCustomer).set( curCol, listOfCustomers.get(curCustomer).get(curCol).trim() );
-								System.out.print(listOfCustomers.get(curCustomer).get(curCol) + " ");
-							}
-							System.out.println();
+				if(listOfCustomers.size() > 1) { // more than one customer found for this lname
+					System.out.println("(" + listOfCustomers.size() + ") Customers found!:");
+
+					// print list of customers
+					for (int curCustomer = 0; curCustomer < listOfCustomers.size(); ++curCustomer) { // iterate over customers
+						System.out.print(curCustomer+1 + ". ");
+						listOfCustomers.get(curCustomer).set(4, listOfCustomers.get(curCustomer).get(4).trim()); // trim trailing whitespace on address
+						for(int curCol = 0; curCol < listOfCustomers.get(curCustomer).size(); ++curCol) { // iterate over customer columns
+							// listOfCustomers.get(curCustomer).set( curCol, listOfCustomers.get(curCustomer).get(curCol).trim() );
+							System.out.print(listOfCustomers.get(curCustomer).get(curCol) + " ");
 						}
-
-						//prompt user to select from list of customers
-						System.out.print("\nSelect customer (1-" + listOfCustomers.size() + "): ");
-						userChoiceInt = readChoice(listOfCustomers.size());
-
-						// get car for this customer's SR; need to query DB for car
-						sr_cid = listOfCustomers.get(userChoiceInt-1).get(0); // get customer id
-
+						System.out.println();
 					}
-					else { // 1 or no customers with lname found
-						// if one customer, confirm customer choice and add SR
-						if(listOfCustomers.size() == 1) {
-							listOfCustomers.get(0).set(4, listOfCustomers.get(0).get(4).trim()); // trim trailing whitespace on address
-							for (int colIter = 0; colIter < listOfCustomers.get(0).size(); ++colIter) {
-								System.out.print(listOfCustomers.get(0).get(colIter) + " ");
-							}
-							System.out.println();
-							System.out.print("\nInitiate request for this customer?\n(y/n): ");
-							userChoice = readBinaryChoice();
-							if(userChoice.equals("y")) { 
-								System.out.print("Adding request for this customer");
-								sr_cid = listOfCustomers.get(0).get(0);
-								// break;
-							}
-							else {
-								InsertServiceRequest(esql);
-								return;
-							}
+
+					//prompt user to select from list of customers
+					System.out.print("\nSelect customer (1-" + listOfCustomers.size() + "): ");
+					userChoiceInt = readChoice(listOfCustomers.size());
+
+					// get car for this customer's SR; need to query DB for car
+					sr_cid = listOfCustomers.get(userChoiceInt-1).get(0); // get customer id
+
+				}
+				else { // 1 or no customers with lname found
+					if(listOfCustomers.size() == 1) { // if one customer, confirm customer choice and add SR
+						listOfCustomers.get(0).set(4, listOfCustomers.get(0).get(4).trim()); // trim trailing whitespace on address
+						for (int colIter = 0; colIter < listOfCustomers.get(0).size(); ++colIter) {
+							System.out.print(listOfCustomers.get(0).get(colIter) + " ");
 						}
-						else {
-							System.out.println("Customer does not exist!");
+						System.out.println();
+						System.out.print("\nInitiate request for this customer?\n(y/n): ");
+						userChoice = readBinaryChoice();
+						if(userChoice.equals("y")) { 
+							System.out.print("Adding request for this customer");
+							sr_cid = listOfCustomers.get(0).get(0);
+							// break;
+						}
+						else { // user does not want to add request for found customer; reprompt insert service request
 							InsertServiceRequest(esql);
 							return;
 						}
 					}
-
-					// use sr_cid to select a car for the service request
-					query = "SELECT Owns.car_vin FROM Owns WHERE Owns.customer_id="+sr_cid+";";
-					List<List<String>> carsOwned = esql.executeQueryAndReturnResult(query);
-
-					// if customer owns many cars, prompt user to select which car
-					if(carsOwned.size() > 1) {
-						System.out.println("("+carsOwned.size() + ") cars owned by this customer");
-
-						// print list of cars owned by this customer
-						for(int curCar = 0; curCar < carsOwned.size(); ++curCar) {
-							System.out.print(curCar+1 + ". ");
-							System.out.print(carsOwned.get(curCar).get(0) + " ");
-							System.out.println();
-						}
-						
-						// prompt user to select from list of cars
-						System.out.print("\nSelect car (1-" + carsOwned.size() + "): ");
-						userChoiceInt = readChoice(carsOwned.size());
-						
-						// get vin for sr_vin from userChoice
-						sr_vin = carsOwned.get(userChoiceInt-1).get(0);
+					else { // customer not found
+						System.out.println("Customer does not exist!");
+						InsertServiceRequest(esql);
+						return;
 					}
-					break;
+				}
 
-				case "n":
-					// create new customer
-					sr_cid = AddCustomer_ReturnID(esql);
+				// use sr_cid to fetch cars owned by customer
+				query = "SELECT Owns.car_vin FROM Owns WHERE Owns.customer_id="+sr_cid+";";
+				List<List<String>> carsOwned = esql.executeQueryAndReturnResult(query);
+
+				// if customer owns many cars, prompt user to select which car
+				if(carsOwned.size() >= 1) {
+					System.out.println("("+carsOwned.size() + ") cars owned by this customer");
+
+					// print list of cars owned by this customer
+					for(int curCar = 0; curCar < carsOwned.size(); ++curCar) {
+						System.out.print(curCar+1 + ". ");
+						System.out.print(carsOwned.get(curCar).get(0) + " ");
+						System.out.println();
+					}
+					
+					// prompt user to select from list of cars
+					System.out.print("\nSelect car (1-" + carsOwned.size() + "): ");
+					userChoiceInt = readChoice(carsOwned.size());
+					
+					// get vin for sr_vin from userChoice
+					sr_vin = carsOwned.get(userChoiceInt-1).get(0);
+				}
+				else { // customer owns no cars
 					sr_vin = AddCar_ReturnVIN(esql);
-					break;
+				}
+			}
+			else {
+				// create new customer
+				sr_cid = AddCustomer_ReturnID(esql);
+				sr_vin = AddCar_ReturnVIN(esql);
 			}
 			// at this point we have sr_rid, sr_cid, sr_vin
 			// get sr_date, sr_odometer, sr_complain
@@ -514,10 +521,13 @@ public class MechanicShop{
 			System.out.print("Enter complaint (optional): ");
 			sr_complain = in.readLine();
 			
-			// query = "INSERT INTO Service_Request VALUES ("+sr_rid+","+sr_cid+","+sr_vin
-			// +","+sr_date+","+sr_odometer+","+sr_complain+");";
+			// String rid_sequence = "rid_sequence";
+			// sr_rid = getCurrSeqVal(rid_sequence);
+			sr_rid = "10"; //FIXME
+			query = "INSERT INTO Service_Request VALUES ("+sr_rid+","+sr_cid+","+sr_vin
+			+","+sr_date+","+sr_odometer+","+sr_complain+");";
 			
-			// System.out.println("Query is:\n"+query);
+			System.out.println("Query is:\n"+query);
 			// esql.executeUpdate(query);
 		}catch(Exception e) {
 			System.err.println(e.getMessage());
@@ -532,38 +542,96 @@ public class MechanicShop{
 		// 
 		try{
 			String query = "SELECT date, comment, bill FROM Closed_Request WHERE bill < 100;";
-			System.out.println("Query is:\n"+query);
-			esql.executeQuery(query);
+			// System.out.println("Query is:\n"+query);
+			System.out.println("\nPrinting date, comment, and bill for all closed requests with bill lower than 100:");
+			esql.executeQueryAndPrintResult(query);
 		}catch(Exception e) {
 			System.err.println(e.getMessage());
 		} 
 	}
 	
 	public static void ListCustomersWithMoreThan20Cars(MechanicShop esql){//7
-		
+		try {
+			String query = "SELECT C.fname, C.lname"
+			+" FROM Customer C, ("
+			+" SELECT customer_id"
+			+" FROM Owns"
+			+" GROUP BY customer_id"
+			+" HAVING COUNT(customer_id)>20) AS temp"
+			+" WHERE C.id=temp.customer_id;";
+			// System.out.println("Query is:\n"+query);
+			System.out.println("\nPrinting first and last name of customers having more than 20 different cars:");
+			esql.executeQueryAndPrintResult(query); //FIXME: Fix whitespace issues in output?
+		} catch (Exception e) {
+			System.err.println(e.getMessage());	
+		}
 	}
 	
 	public static void ListCarsBefore1995With50000Milles(MechanicShop esql){//8
 		try{
-			String query = "SELECT DISTINCT make,model, year"
-			+ "FROM Car AS C, Service_Request AS S_R"
-			+ "WHERE year < 1995 and S_R.car_vin = C.vin and S_R.odometer < 50000;";
-			System.out.println("Query is:\n"+query);
-			esql.executeUpdate(query);
+			String query = "SELECT DISTINCT make,model,year"
+			+ " FROM Car C, Service_Request S_R"
+			+ " WHERE year < 1995 AND S_R.car_vin = C.vin AND S_R.odometer<50000;";
+			// System.out.println("Query is:\n"+query);
+			System.out.println("\nPrinting make, model, and year of all cars built before 1995 having less than 50,000 miles:");
+			esql.executeQueryAndPrintResult(query); //FIXME: Fix whitespace issues in output?
 		}catch(Exception e){
-			System.err.println(e.getMessage());
+			System.err.println(e.getMessage());	
 		}
 	}
 	
 	public static void ListKCarsWithTheMostServices(MechanicShop esql){//9
 		//
-		
+		try {
+			int userk;
+			// returns only if a correct value is given.
+			do {
+				System.out.print("Please enter a k: ");
+				try { // read the integer, parse it and break.
+					userk = Integer.parseInt(in.readLine());
+					if(userk < 1) {
+						throw new Exception();
+					}
+					break;
+				}catch (Exception e) {
+					System.out.println("Your input is invalid!");
+					continue;
+				}//end try
+			}while (true);
+			
+			String query = "SELECT C.make, C.model, temp.numRequests"
+			+" FROM Car C, ("
+			+" SELECT car_vin, COUNT(rid) AS numRequests"
+			+" FROM Service_Request"
+			+" GROUP BY car_vin ) AS temp"
+			+" WHERE C.vin=temp.car_vin"
+			+" ORDER BY temp.numRequests DESC LIMIT "+userk+";";
+
+			// System.out.println("Query is:\n"+query);
+			System.out.println("\nPrinting the make, model and number of service requests for the first <"+ userk + "> cars with the highest number of service orders:");
+			esql.executeQueryAndPrintResult(query);
+		} catch (Exception e) {
+			System.err.println(e.getMessage());		
+		}
 	}
 	
 	public static void ListCustomersInDescendingOrderOfTheirTotalBill(MechanicShop esql){//9
 		//
-		String query = ""+
-		"SELECT";
+		try {
+			String query = "SELECT C.fname, C.lname, totalBill"
+			+" FROM Customer C, ("
+			+" SELECT SR.customer_id, SUM(CR.bill) AS totalBill"
+			+" FROM Closed_Request CR, Service_Request SR"
+			+" WHERE CR.rid=SR.rid"
+			+" GROUP BY SR.customer_id) AS temp"
+			+" WHERE C.id=temp.customer_id"
+			+" ORDER BY temp.totalBill DESC;";
+			// System.out.println("Query is:\n"+query);
+			System.out.println("\nPrinting the first name, last name and total bill of customers in descending order of their total bill for all cars brought to the mechanic:");
+			esql.executeQueryAndPrintResult(query);
+		}catch(Exception e) {
+			System.err.println(e.getMessage());
+		}
 	}
 	
 }
