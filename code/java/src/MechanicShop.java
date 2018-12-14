@@ -548,6 +548,27 @@ public class MechanicShop{
 		return inputInt;
 	}
 
+	public static String readDate() {
+		String input;
+		do {
+			try {
+				input = in.readLine();
+				input = input.trim();
+				if(!input.matches("^\\d{1}/\\d{1}/\\d{4}|\\d{1}/\\d{2}/\\d{4}|\\d{2}/\\d{2}/\\d{4}|\\d{2}/\\d{1}/\\d{4}$")) {
+					throw new Exception();
+				}
+				else {
+					break;
+				}
+			} catch (Exception e) {
+				System.out.println("\nInvalid date! Accepted format is mm/dd/yyyy");
+				System.out.print("Please enter a valid date: ");
+				continue;
+			}
+		}while(true);
+		return input;
+	}
+
 	// -----------------END OF INPUT VERIFICATION FUNCTIONS---------------------
 	
 	public static void AddCustomer(MechanicShop esql){//1
@@ -583,12 +604,44 @@ public class MechanicShop{
 		}catch(Exception e) {
 			System.err.println(e.getMessage());
 		}
-		
 	}
 
 	public static String AddCustomer_ReturnID(MechanicShop esql){//1
-		String cid = "";
-		return cid;
+		int c_ID;
+		String c_fname, c_lname, c_address, c_phone;
+		do {
+			try {
+				String query = "";
+				System.out.println("\n----Adding Customer----");
+
+				c_ID = esql.getCurrSeqVal("cid_sequence"); // c_ID gets val from sequence
+
+				System.out.print("\nEnter first name: ");
+				c_fname = readName();
+				System.out.print("\nEnter last name: ");
+				c_lname = readName();
+				System.out.print("\nEnter a phone number in format ###-###-####: ");
+				c_phone = readPhoneNum();
+
+				// put phone number in format (###)###-####
+				char[] c_phoneArr = c_phone.toCharArray();
+				c_phoneArr[3] = ')';
+				c_phone = String.valueOf(c_phoneArr);
+				c_phone = "(" + c_phone;
+
+				System.out.print("\nEnter address: ");
+				c_address = readUserString("address", 256);
+				
+				query = "INSERT INTO Customer VALUES ("+c_ID+",'"+c_fname+"','"+c_lname+"','"+c_phone+"','"+c_address+"');";
+				System.out.println("Query is:\n"+query);
+				esql.executeUpdate(query);
+				break;
+			}catch(Exception e) {
+				System.err.println(e.getMessage());
+				continue;
+			}
+		}while(true);
+		return Integer.toString(c_ID);
 	}
 	
 	public static void AddMechanic(MechanicShop esql){//2
@@ -648,7 +701,30 @@ public class MechanicShop{
 	}
 
 	public static String AddCar_ReturnVIN(MechanicShop esql){//3
-		String vin = "";
+		String vin, make, model;
+		int year;
+		do {
+			try {
+				String query = "";
+				System.out.println("\n----Add Car----");
+				System.out.print("\nEnter VIN: "); 
+				vin = readUserString("vin", 16);
+				System.out.print("\nEnter make: ");
+				make = readUserString("make", 32);
+				System.out.print("\nEnter model: ");
+				model = readUserString("model", 32);
+				System.out.print("\nEnter year: ");
+				year = readYEAR_Domain(); 
+
+				query = "INSERT INTO Car VALUES ("+vin+", '"+make+"', '"+model+"', "+year+");";
+				System.out.println("Query is:\n"+query);
+				esql.executeUpdate(query);
+				break;
+			}catch(Exception e) {
+				System.err.println(e.getMessage());
+				continue;
+			}
+		}while(true);
 		return vin;
 	}
 	
@@ -763,10 +839,10 @@ public class MechanicShop{
 			// at this point we have sr_rid, sr_cid, sr_vin
 			// get sr_date, sr_odometer, sr_complain
 			System.out.print("Enter service request date: ");
-			sr_date = in.readLine();
-			System.out.print("Enter odometer reading: ");
+			sr_date = readDate();
+			System.out.print("\nEnter odometer reading: ");
 			sr_odometer = readUserInteger();
-			System.out.print("Enter complaint (optional): ");
+			System.out.print("\nEnter complaint (optional): ");
 			sr_complain = in.readLine();
 			
 			String rid_sequence = "rid_sequence";
