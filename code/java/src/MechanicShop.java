@@ -697,7 +697,7 @@ public class MechanicShop{
 			System.out.print("\nEnter year: ");
 			year = readYEAR_Domain(); 
 
-			query = "INSERT INTO Car VALUES ("+vin+", '"+make+"', '"+model+"', "+year+");";
+			query = "INSERT INTO Car VALUES ('"+vin+"', '"+make+"', '"+model+"', "+year+");";
 			System.out.println("Query is:\n"+query);
 			esql.executeUpdate(query);
 		}catch(Exception e) {
