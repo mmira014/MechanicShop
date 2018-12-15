@@ -924,18 +924,7 @@ public class MechanicShop{
 					do {
 
 						System.out.println("Enter Closing Date: ");
-						date = in.readLine();
-<<<<<<< HEAD
-						if(! validDate(date))
-						{
-							System.err.println("invalid");
-=======
-
-						if (isInt(date) == false || (Integer.parseInt(date) < 0) || (date.length() != 8))  {
-							System.out.println("Please enter valid date. Dates must be in format!"); //FIXME: date format
->>>>>>> 0c81af1dce698aed88e3eb717ad549215ab19a1e
-							continue;
-						}
+						date = readDate();
 						// if (isInt(date) == false || (Integer.parseInt(date) < 0) || (date.length() != 8))  {
 						// 	System.out.println("Please enter valid date. Dates must be in format!"); //FIXME: date format
 						// 	continue;
@@ -950,18 +939,10 @@ public class MechanicShop{
 						wid = esql.getCurrSeqVal("wid_sequence");
 						System.out.print("Enter final bill: ");
 						bill = in.readLine();
-<<<<<<< HEAD
-=======
-
->>>>>>> 0c81af1dce698aed88e3eb717ad549215ab19a1e
 						if (isInt(bill) == false || Integer.parseInt(bill) < 0) {
 							System.out.println("Invalid bill!");
 							continue;
 						}
-<<<<<<< HEAD
-=======
-
->>>>>>> 0c81af1dce698aed88e3eb717ad549215ab19a1e
 						System.out.print("Enter final comments: ");
 						comment = in.readLine();
 		
@@ -1117,9 +1098,6 @@ public class MechanicShop{
 		
 
 	return true;
-
-
-
 	}
 	
 	public static void ListCustomersWithBillLessThan100(MechanicShop esql){//6
