@@ -355,6 +355,11 @@ public class MechanicShop{
 		return input;
 	}//end readChoice
 
+	/**
+	 * Used to have user select over a range of numbers from (1 - maxVal). Numbers outside range not accepted
+	 * @param maxVal
+	 * @return integer within range (1-maxVal)
+	 */
 	public static int readChoice(int maxVal) {
 		int input;
 		// returns only if a correct value is given.
@@ -378,7 +383,7 @@ public class MechanicShop{
 	/**
 	 * Used to read user input for (y/n) questions
 	 * 
-	 * @return - "y" or "n" (as strings not char)
+	 * @return "y" or "n" (as strings not char)
 	 */
 	public static String readBinaryChoice() {
 		String input;
@@ -425,6 +430,11 @@ public class MechanicShop{
 		return inputInt;
 	}
 
+	/**
+	 * Checks if string is an integer
+	 * @param userString
+	 * @return true if userString is valid integer; false else
+	 */
 	public static boolean isInt(String userString) {
 		try { 
 			Integer.parseInt(userString); 
@@ -465,6 +475,10 @@ public class MechanicShop{
 		return input;
 	}
 
+	/**
+	 * Used to read phone number from user. Only accepts numbers in form ###-###-####
+	 * @return string containing phone number; string has form ###-###-####
+	 */
 	public static String readPhoneNum() {
 		String input;
 		do {
@@ -511,6 +525,10 @@ public class MechanicShop{
 		return input;
 	}
 
+	/**
+	 * Used to read a year from the user following database domain constraint. Only years satisfying database domain are accepted
+	 * @return int containing valid year
+	 */
 	public static int readYEAR_Domain() {
 		String input;
 		int inputInt;
@@ -532,6 +550,10 @@ public class MechanicShop{
 		return inputInt;
 	}
 
+	/**
+	 * Used to read # years (of experience) from user. Only #years satisfying database domain are accepted
+	 * @return int of valid number of years
+	 */
 	public static int readYEARS_Domain() {
 		String input;
 		int inputInt;
@@ -553,8 +575,13 @@ public class MechanicShop{
 		return inputInt;
 	}
 
+	/**
+	 * Used to read dates from user. Only accepts dates in form ##/##/#### where the first 2 divisions can have 1 or 2 digits.
+	 * Month/day numbers must match (no day 31 of feb) 
+	 * @return string date of form ##/##/####
+	 */
 	public static String readDate() {
-		String input;
+		String input, userChoice;
 		do {
 			try {
 				input = in.readLine();
@@ -563,6 +590,47 @@ public class MechanicShop{
 					throw new Exception();
 				}
 				else {
+					//check valid month
+					String months = input.substring(0, 2);
+					int monthsInt = Integer.parseInt(months);
+					if(monthsInt > 12) {
+						throw new Exception();
+					}
+					//check valid days
+					String days = input.substring(3, 5);
+					int daysInt = Integer.parseInt(days);
+					if( daysInt > 31) {
+						throw new Exception();
+					}
+					else if(monthsInt <= 7) { // months are jan-july
+						if(monthsInt % 2 == 0) { // even # months (feb, april, etc)
+							if(monthsInt == 2) {
+								if(daysInt == 29) {
+									System.out.print("Possible date error! Is this year a leap year?\n(y/n): ");
+									userChoice = readBinaryChoice();
+									if(userChoice.equals("y")) {
+										break; // valid
+									}
+									else {
+										throw new Exception();
+									}
+								}
+								else if(daysInt > 28) {
+									throw new Exception();
+								}
+							}
+							else if(daysInt > 30) {
+								throw new Exception();
+							}
+						}
+					}
+					else { // months 8-12 (aug - dec)
+						if(monthsInt % 2 != 0) { // odd months (sept or nov)
+							if(daysInt > 30) {
+								throw new Exception();
+							}
+						}
+					}
 					break;
 				}
 			} catch (Exception e) {
@@ -603,7 +671,7 @@ public class MechanicShop{
 			c_address = readUserString("address", 256);
 			
 			query = "INSERT INTO Customer VALUES ("+c_ID+",'"+c_fname+"','"+c_lname+"','"+c_phone+"','"+c_address+"');";
-			System.out.println("Query is:\n"+query);
+			System.out.println("\nQuery is:\n"+query);
 			esql.executeUpdate(query);
 
 		}catch(Exception e) {
@@ -638,7 +706,7 @@ public class MechanicShop{
 				c_address = readUserString("address", 256);
 				
 				query = "INSERT INTO Customer VALUES ("+c_ID+",'"+c_fname+"','"+c_lname+"','"+c_phone+"','"+c_address+"');";
-				System.out.println("Query is:\n"+query);
+				System.out.println("\nQuery is:\n"+query);
 				esql.executeUpdate(query);
 				break;
 			}catch(Exception e) {
@@ -675,44 +743,92 @@ public class MechanicShop{
 			m_yearsExp = readYEARS_Domain();
 
 			query = "INSERT INTO Mechanic VALUES ("+m_ID+",'"+m_fname+"','"+m_lname+"',"+m_yearsExp+");";
-			System.out.println("Query is:\n"+query);
+			System.out.println("\nQuery is:\n"+query);
 			esql.executeUpdate(query);
 		}catch(Exception e) {
 			System.err.println(e.getMessage());
 		}
+	}
+
+	/**
+	 * Given a customer lname, find customer ID 
+	 * @param c_lname
+	 * @return c_ID for customer with lname
+	 */
+	public static int getcIdFromLName(MechanicShop esql) {
+		String c_ID, c_lname;
+		String query,userChoice;
+		int userChoiceInt;
+		do {
+			try {
+				System.out.print("Enter the customer's last name: ");
+				c_lname = readName();
+
+				query = "select * from customer where customer.lname='"+c_lname+"';";
+				// System.out.println(query);
+
+				// search database for customer(s) and save result
+				List<List<String>> listOfCustomers = esql.executeQueryAndReturnResult(query);
+
+				if(listOfCustomers.size() > 1) { // more than one customer found for this lname
+					System.out.println("(" + listOfCustomers.size() + ") Customers found!:");
+
+					// print list of customers
+					for (int curCustomer = 0; curCustomer < listOfCustomers.size(); ++curCustomer) { // iterate over customers
+						System.out.print(curCustomer+1 + ". ");
+						listOfCustomers.get(curCustomer).set(4, listOfCustomers.get(curCustomer).get(4).trim()); // trim trailing whitespace on address
+						for(int curCol = 0; curCol < listOfCustomers.get(curCustomer).size(); ++curCol) { // iterate over customer columns
+							System.out.print(listOfCustomers.get(curCustomer).get(curCol) + " ");
+						}
+						System.out.println();
+					}
+
+					//prompt user to select from list of customers
+					System.out.print("\nSelect customer (1-" + listOfCustomers.size() + "): ");
+					userChoiceInt = readChoice(listOfCustomers.size());
+
+					// get car for this customer's SR; need to query DB for car
+					c_ID = listOfCustomers.get(userChoiceInt-1).get(0); // get customer id
+					break;
+				}
+				else { // 1 or no customers with lname found
+					if(listOfCustomers.size() == 1) {
+						listOfCustomers.get(0).set(4, listOfCustomers.get(0).get(4).trim()); // trim trailing whitespace on address
+							for (int colIter = 0; colIter < listOfCustomers.get(0).size(); ++colIter) {
+								System.out.print(listOfCustomers.get(0).get(colIter) + " ");
+							}
+							System.out.println();
+							System.out.print("\nAdd car for this customer?\n(y/n): ");
+							userChoice = readBinaryChoice();
+							if(userChoice.equals("y")) {
+								c_ID = listOfCustomers.get(0).get(0);
+								break;
+							}
+							else {
+								System.out.println();
+								continue;
+							}
+					}
+					System.out.println("No customer found with last name: "+c_lname);
+					continue;
+				}
+			}catch(Exception e) {
+				System.err.println(e.getMessage());
+				continue;
+			}
+		}while(true);
+		return Integer.parseInt(c_ID);
 	}
 	
 	public static void AddCar(MechanicShop esql){//3	
 		String vin, make, model;
-		int year;
-		try {
-			String query = "";
-			System.out.println("\n----Add Car----");
-			System.out.print("\nEnter VIN: "); 
-			vin = readUserString("vin", 16);
-			System.out.print("\nEnter make: ");
-			make = readUserString("make", 32);
-			System.out.print("\nEnter model: ");
-			model = readUserString("model", 32);
-			System.out.print("\nEnter year: ");
-			year = readYEAR_Domain(); 
-
-			query = "INSERT INTO Car VALUES ('"+vin+"', '"+make+"', '"+model+"', "+year+");";
-			System.out.println("Query is:\n"+query);
-			esql.executeUpdate(query);
-		}catch(Exception e) {
-			System.err.println(e.getMessage());
-		}
-	}
-
-	public static String AddCar_ReturnVIN(MechanicShop esql){//3
-		String vin, make, model;
-		int year;
+		int year, c_ID, owns_ID;
 		do {
 			try {
 				String query = "";
 				System.out.println("\n----Add Car----");
-				System.out.print("\nEnter VIN: "); 
+				c_ID = getcIdFromLName(esql);
+				System.out.print("Enter VIN: "); 
 				vin = readUserString("vin", 16);
 				System.out.print("\nEnter make: ");
 				make = readUserString("make", 32);
@@ -721,8 +837,51 @@ public class MechanicShop{
 				System.out.print("\nEnter year: ");
 				year = readYEAR_Domain(); 
 
-				query = "INSERT INTO Car VALUES ("+vin+", '"+make+"', '"+model+"', "+year+");";
-				System.out.println("Query is:\n"+query);
+				// insert car into Car
+				query = "INSERT INTO Car VALUES ('"+vin+"', '"+make+"', '"+model+"', "+year+");";
+				System.out.println("\nQuery is:\n"+query);
+				esql.executeUpdate(query);
+
+				// insert car, customer into Owns
+				owns_ID = esql.getCurrSeqVal("Ownsid_sequence");
+				query = "INSERT INTO Owns VALUES("+owns_ID+","+c_ID+",'"+vin+"');";
+				System.out.println("\nQuery is:\n"+query);
+				esql.executeUpdate(query);
+				break;
+			}catch(Exception e) {
+				System.err.println(e.getMessage());
+				continue;
+			}
+		}while(true);
+		return;
+	}
+
+	public static String AddCar_ReturnVIN(MechanicShop esql){//3
+		String vin, make, model;
+		int year, c_ID, owns_ID;
+		do {
+			try {
+				String query = "";
+				System.out.println("\n----Add Car----");
+				c_ID = getcIdFromLName(esql);
+				System.out.print("Enter VIN: "); 
+				vin = readUserString("vin", 16);
+				System.out.print("\nEnter make: ");
+				make = readUserString("make", 32);
+				System.out.print("\nEnter model: ");
+				model = readUserString("model", 32);
+				System.out.print("\nEnter year: ");
+				year = readYEAR_Domain(); 
+
+				// insert car into Car
+				query = "INSERT INTO Car VALUES ('"+vin+"', '"+make+"', '"+model+"', "+year+");";
+				System.out.println("\nQuery is:\n"+query);
+				esql.executeUpdate(query);
+
+				// insert car, customer into Owns
+				owns_ID = esql.getCurrSeqVal("Ownsid_sequence");
+				query = "INSERT INTO Owns VALUES("+owns_ID+","+c_ID+",'"+vin+"');";
+				System.out.println("\nQuery is:\n"+query);
 				esql.executeUpdate(query);
 				break;
 			}catch(Exception e) {
@@ -838,8 +997,11 @@ public class MechanicShop{
 			}
 			else {
 				// create new customer
+				System.out.print("\n------Insert Service Request------");
 				sr_cid = AddCustomer_ReturnID(esql);
+				System.out.print("\n------Insert Service Request------");
 				sr_vin = AddCar_ReturnVIN(esql);
+				System.out.println();
 			}
 			// at this point we have sr_rid, sr_cid, sr_vin
 			// get sr_date, sr_odometer, sr_complain
@@ -855,7 +1017,7 @@ public class MechanicShop{
 			query = "INSERT INTO Service_Request VALUES ("+sr_rid+","+sr_cid+",'"+sr_vin
 			+"','"+sr_date+"',"+sr_odometer+",'"+sr_complain+"');";
 			
-			System.out.println("Query is:\n"+query);
+			System.out.println("\nQuery is:\n"+query);
 			esql.executeUpdate(query);
 		}catch(Exception e) {
 			System.err.println(e.getMessage());
@@ -949,6 +1111,7 @@ public class MechanicShop{
 
 
 						query = "INSERT INTO Closed_Request VALUES ("+wid+", '"+rid+"', 1, '"+date+"', '"+comment+"', "+bill+" );";
+						System.out.println("\nQuery is:\n"+query);
 						System.out.println(query);
 						esql.executeUpdate(query);
 						return;
