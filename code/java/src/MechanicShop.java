@@ -644,6 +644,10 @@ public class MechanicShop{
 
 	// -----------------END OF INPUT VERIFICATION FUNCTIONS---------------------
 	
+	/**
+	 * Adds customer to Customer table using input from user.
+	 * Uses verification helper functions to sanitize input
+	 */
 	public static void AddCustomer(MechanicShop esql){//1
 		int c_ID;
 		String c_fname, c_lname, c_address, c_phone;
@@ -679,6 +683,12 @@ public class MechanicShop{
 		}
 	}
 
+	/**
+	 * Adds customer to Customer table using input from user and returns the id of the new customer
+	 * Uses verification helper functions to sanitize input
+	 * @param esql
+	 * @return id of new customer
+	 */
 	public static String AddCustomer_ReturnID(MechanicShop esql){//1
 		int c_ID;
 		String c_fname, c_lname, c_address, c_phone;
@@ -717,6 +727,11 @@ public class MechanicShop{
 		return Integer.toString(c_ID);
 	}
 	
+	/**
+	 * Adds mechanic to Mechanic table using input from user.
+	 * Uses verification helper functions to sanitize input
+	 * @param esql
+	 */
 	public static void AddMechanic(MechanicShop esql){//2
 		/*
 		Mechanic:
@@ -752,7 +767,7 @@ public class MechanicShop{
 
 	/**
 	 * Given a customer lname, find customer ID 
-	 * @param c_lname
+	 * @param esql
 	 * @return c_ID for customer with lname
 	 */
 	public static int getcIdFromLName(MechanicShop esql) {
@@ -820,6 +835,10 @@ public class MechanicShop{
 		return Integer.parseInt(c_ID);
 	}
 	
+	/**
+	 * Adds car to Car table and inserts item in Owns for the car and the customer
+	 * @param esql
+	 */
 	public static void AddCar(MechanicShop esql){//3	
 		String vin, make, model;
 		int year, c_ID, owns_ID;
@@ -856,6 +875,12 @@ public class MechanicShop{
 		return;
 	}
 
+	/**
+	 * Adds car to Car table and inserts item in Owns for the car and the customer
+	 * AND returns vin for newly added car
+	 * @param esql
+	 * @return vin for newly added car
+	 */
 	public static String AddCar_ReturnVIN(MechanicShop esql){//3
 		String vin, make, model;
 		int year, c_ID, owns_ID;
@@ -892,6 +917,10 @@ public class MechanicShop{
 		return vin;
 	}
 	
+	/**
+	 * Inserts a service request for customer, car
+	 * @param esql
+	 */
 	public static void InsertServiceRequest(MechanicShop esql){//4
 		/*
 		Service_Request:
